@@ -1,13 +1,15 @@
+// Database Name and Version (Version 2 is important for upgrade)
 const DB_NAME = 'MewoinfoDB';
-const DB_VERSION = 2; // Version baralam karon notun store lagbe
+const DB_VERSION = 2; 
 
-const STORE_SETTINGS = 'settings';
-const STORE_DATA = 'data';
+const STORE_SETTINGS = 'settings'; 
+const STORE_DATA = 'data';         
 
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+        // Eta notun version er jonno database update korbe
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
             if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
@@ -23,6 +25,7 @@ function openDB() {
     });
 }
 
+// Generic Save Helper
 async function saveData(storeName, data) {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -34,6 +37,7 @@ async function saveData(storeName, data) {
     });
 }
 
+// Generic Get Helper
 async function getData(storeName, id) {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -46,7 +50,7 @@ async function getData(storeName, id) {
 }
 
 export const db = {
-    // Settings
+    // 1. Settings (API Key, Interval)
     async setSettings(apiKey, intervalMinutes, isEnabled) {
         await saveData(STORE_SETTINGS, { id: 'config', val: { apiKey, intervalMinutes, isEnabled } });
     },
@@ -54,21 +58,33 @@ export const db = {
         return await getData(STORE_SETTINGS, 'config') || { apiKey: '', intervalMinutes: 1, isEnabled: false };
     },
 
-    // PDF Text
-    async setPDFText(text) { await saveData(STORE_DATA, { id: 'source_text', val: text }); },
-    async getPDFText() { return await getData(STORE_DATA, 'source_text'); },
+    // 2. PDF Text
+    async setPDFText(text) {
+        await saveData(STORE_DATA, { id: 'source_text', val: text });
+    },
+    async getPDFText() {
+        return await getData(STORE_DATA, 'source_text');
+    },
 
-    // Facts
-    async setFacts(factsArray) { await saveData(STORE_DATA, { id: 'meow_facts', val: factsArray }); },
-    async getFacts() { return await getData(STORE_DATA, 'meow_facts') || []; },
+    // 3. Facts List
+    async setFacts(factsArray) {
+        await saveData(STORE_DATA, { id: 'meow_facts', val: factsArray });
+    },
+    async getFacts() {
+        return await getData(STORE_DATA, 'meow_facts') || [];
+    },
 
-    // Index
-    async setIndex(index) { await saveData(STORE_DATA, { id: 'current_index', val: index }); },
-    async getIndex() { return await getData(STORE_DATA, 'current_index') || 0; },
+    // 4. Current Index
+    async setIndex(index) {
+        await saveData(STORE_DATA, { id: 'current_index', val: index });
+    },
+    async getIndex() {
+        return await getData(STORE_DATA, 'current_index') || 0;
+    },
 
-    // --- NEW FEATURES ---
+    // --- NEW FEATURES (Must Add These!) ---
     
-    // 1. Snooze Logic (Timestamp)
+    // 5. Snooze Logic (Save timestamp)
     async setSnoozeUntil(timestamp) {
         await saveData(STORE_SETTINGS, { id: 'snooze_until', val: timestamp });
     },
@@ -76,11 +92,13 @@ export const db = {
         return await getData(STORE_SETTINGS, 'snooze_until') || 0;
     },
 
-    // 2. History (Last 5 Facts)
+    // 6. History Logic (Last 5 facts)
     async addToHistory(fact) {
         let history = await getData(STORE_DATA, 'history') || [];
-        history.unshift(fact); // Add to top
-        if (history.length > 5) history.pop(); // Keep only 5
+        // Notun fact sobar upore add koro
+        history.unshift(fact); 
+        // 5 tar beshi hole purono delete koro
+        if (history.length > 5) history.pop(); 
         await saveData(STORE_DATA, { id: 'history', val: history });
     },
     async getHistory() {
