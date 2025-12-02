@@ -1,12 +1,9 @@
-// Database Name and Version
 const DB_NAME = 'MewoinfoDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Version baralam karon notun store lagbe
 
-// Stores (Tables)
-const STORE_SETTINGS = 'settings'; // API Key, Interval, Enabled/Disabled
-const STORE_DATA = 'data';         // PDF Text, Processed Facts
+const STORE_SETTINGS = 'settings';
+const STORE_DATA = 'data';
 
-// Open Database Helper
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -26,36 +23,30 @@ function openDB() {
     });
 }
 
-// Generic Save Function
 async function saveData(storeName, data) {
     const db = await openDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.put(data);
-
         request.onsuccess = () => resolve(true);
         request.onerror = () => reject('Save Failed');
     });
 }
 
-// Generic Get Function
 async function getData(storeName, id) {
     const db = await openDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.get(id);
-
         request.onsuccess = () => resolve(request.result ? request.result.val : null);
         request.onerror = () => reject('Get Failed');
     });
 }
 
-// --- Specific Helpers for our App ---
-
 export const db = {
-    // 1. Settings (API Key, Interval)
+    // Settings
     async setSettings(apiKey, intervalMinutes, isEnabled) {
         await saveData(STORE_SETTINGS, { id: 'config', val: { apiKey, intervalMinutes, isEnabled } });
     },
@@ -63,29 +54,36 @@ export const db = {
         return await getData(STORE_SETTINGS, 'config') || { apiKey: '', intervalMinutes: 1, isEnabled: false };
     },
 
-    // 2. PDF Text (Raw text from file)
-    async setPDFText(text) {
-        await saveData(STORE_DATA, { id: 'source_text', val: text });
+    // PDF Text
+    async setPDFText(text) { await saveData(STORE_DATA, { id: 'source_text', val: text }); },
+    async getPDFText() { return await getData(STORE_DATA, 'source_text'); },
+
+    // Facts
+    async setFacts(factsArray) { await saveData(STORE_DATA, { id: 'meow_facts', val: factsArray }); },
+    async getFacts() { return await getData(STORE_DATA, 'meow_facts') || []; },
+
+    // Index
+    async setIndex(index) { await saveData(STORE_DATA, { id: 'current_index', val: index }); },
+    async getIndex() { return await getData(STORE_DATA, 'current_index') || 0; },
+
+    // --- NEW FEATURES ---
+    
+    // 1. Snooze Logic (Timestamp)
+    async setSnoozeUntil(timestamp) {
+        await saveData(STORE_SETTINGS, { id: 'snooze_until', val: timestamp });
     },
-    async getPDFText() {
-        return await getData(STORE_DATA, 'source_text');
+    async getSnoozeUntil() {
+        return await getData(STORE_SETTINGS, 'snooze_until') || 0;
     },
 
-    // 3. Meow Facts (Array of strings)
-    async setFacts(factsArray) {
-        // Fetch existing to append or overwrite? Let's overwrite for new PDF, append for refill.
-        // For simplicity, we assume this function receives the FULL updated list.
-        await saveData(STORE_DATA, { id: 'meow_facts', val: factsArray });
+    // 2. History (Last 5 Facts)
+    async addToHistory(fact) {
+        let history = await getData(STORE_DATA, 'history') || [];
+        history.unshift(fact); // Add to top
+        if (history.length > 5) history.pop(); // Keep only 5
+        await saveData(STORE_DATA, { id: 'history', val: history });
     },
-    async getFacts() {
-        return await getData(STORE_DATA, 'meow_facts') || [];
-    },
-
-    // 4. Current Index (Where are we in the list?)
-    async setIndex(index) {
-        await saveData(STORE_DATA, { id: 'current_index', val: index });
-    },
-    async getIndex() {
-        return await getData(STORE_DATA, 'current_index') || 0;
+    async getHistory() {
+        return await getData(STORE_DATA, 'history') || [];
     }
 };
