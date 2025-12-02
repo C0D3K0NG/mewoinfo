@@ -1,0 +1,147 @@
+body {
+    width: 320px;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.header {
+    background: #ff9f43; /* Cat Orange */
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.container {
+    padding: 15px;
+}
+
+.section {
+    margin-bottom: 15px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"], input[type="password"], input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Fixes padding width issue */
+}
+
+input[type="file"] {
+    font-size: 12px;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: 0.2s;
+}
+
+.primary-btn {
+    background: #333;
+    color: white;
+}
+.primary-btn:hover { background: #555; }
+
+.secondary-btn {
+    background: #ff9f43;
+    color: white;
+    font-size: 12px;
+}
+
+.outline-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: #333;
+}
+.outline-btn:hover { background: #eee; }
+
+/* Toggle Switch */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: #ff9f43; }
+input:checked + .slider:before { transform: translateX(14px); }
+
+/* Status & Utilities */
+.status-box {
+    background: #e1ffc7;
+    color: #2e7d32;
+    padding: 5px;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.hidden { display: none; }
+
+.message {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 10px;
+    min-height: 15px;
+    color: #666;
+}
