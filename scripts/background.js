@@ -111,11 +111,23 @@ async function handleGameLoop() {
             // Check if URL is restricted (chrome:// etc)
             if (!tab.url.startsWith('chrome://') && !tab.url.startsWith('edge://')) {
                 // Send Message to Content Script
-                await chrome.tabs.sendMessage(tab.id, {
-                    action: 'SHOW_CAT',
-                    fact: currentFact,
-                    catIndex: Math.floor(Math.random() * 10) // Random Cat 0-9
+                // --- NEW INJECTION LOGIC ---
+                // 1. Jor kore Script dhokao (Injection)
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['scripts/content.js']
                 });
+
+                // 2. Ektu wait koro jeno script ta load hoy
+                setTimeout(async () => {
+                    // 3. Tarpor Message pathao
+                    await chrome.tabs.sendMessage(tab.id, {
+                        action: 'SHOW_CAT',
+                        fact: currentFact,
+                        catIndex: Math.floor(Math.random() * 10)
+                    });
+                }, 500);
+                // ---------------------------
                 
                 // Update Index for next time
                 await db.setIndex(index + 1);
