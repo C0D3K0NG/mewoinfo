@@ -1,20 +1,26 @@
-console.log("😺 MEWOINFO: Script has started running!");
+console.log("😺 MEWOINFO: Content script loaded!");
 
 let autoRemoveTimer = null;
 
+// Listen for messages from Background Script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("📩 Message received:", request);
+    
     if (request.action === "SHOW_CAT") {
         showMeowFact(request.fact, request.catIndex);
     }
 });
 
 function showMeowFact(factText, catIndex) {
-    removeCat();
+    console.log("🐈 Showing Cat:", factText);
 
-    // 1. Create Container & Bubble
+    removeCat(); // Clean up old cat
+
+    // 1. Create Container
     const container = document.createElement('div');
     container.id = 'mewoinfo-container';
 
+    // 2. Create Bubble
     const bubble = document.createElement('div');
     bubble.id = 'mewoinfo-bubble';
     
@@ -28,27 +34,24 @@ function showMeowFact(factText, catIndex) {
     closeBtn.onclick = removeCat;
     bubble.appendChild(closeBtn);
 
-    // --- 🔊 SOUND EFFECT ---
-    const soundUrl = chrome.runtime.getURL('sounds/meow.mp3');
-    const audio = new Audio(soundUrl);
-    audio.volume = 0.4; // Volume kom rakhlam
-    audio.play().catch(e => console.log("Audio blocked until interaction"));
-
-    // 2. Create Cat Image
+    // 3. Create Cat Image
     const catImg = document.createElement('img');
     catImg.id = 'mewoinfo-cat';
-    catImg.src = chrome.runtime.getURL(`cat_gifs/cat${catIndex}.gif`);
+    
+    // IMAGE PATH CHECK
+    const gifUrl = chrome.runtime.getURL(`cat_gifs/cat${catIndex}.gif`);
+    catImg.src = gifUrl;
     catImg.onclick = removeCat;
 
-    // 3. Assemble
+    // 4. Assemble
     container.appendChild(bubble);
     container.appendChild(catImg);
     document.body.appendChild(container);
 
-    // 4. Timer
+    // 5. Timer - Auto remove after 30 seconds
     autoRemoveTimer = setTimeout(() => {
         removeCat();
-    }, 30000);
+    }, 30000); 
 }
 
 function removeCat() {
