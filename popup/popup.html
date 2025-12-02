@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mewoinfo Settings</title>
+    <title>Mewoinfo</title>
     <link rel="stylesheet" href="popup.css">
     <script src="../lib/pdf.min.js"></script>
     <script src="../lib/jspdf.umd.min.js"></script>
@@ -11,29 +11,48 @@
 <body>
 
     <div class="header">
-        <img src="../icons/icon48.png" alt="Icon">
-        <h1>Mewoinfo</h1>
+        <img src="../icons/icon48.png" alt="Icon" class="header-icon">
+        <h1>Mewo Info</h1>
     </div>
 
     <div class="container">
-        <div class="section">
-            <label for="apiKey">Gemini API Key 🔑</label>
-            <input type="password" id="apiKey" placeholder="Paste your API key here...">
+        <div class="input-group">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="apiKey" placeholder="Gemini API Key...">
         </div>
 
-        <div class="section">
-            <label>Source Material 📄</label>
-            <div id="file-status" class="status-box hidden">✅ PDF Loaded!</div>
-            <input type="file" id="pdfUpload" accept=".pdf">
-            <button id="regenerateBtn" class="secondary-btn hidden">🔄 Regenerate New Facts</button>
-        </div>
-
-        <div class="section">
-            <label for="interval">Interval (Minutes) ⏰</label>
-            <input type="number" id="interval" value="5" min="1">
+        <div class="section pdf-section">
+            <div class="section-header">
+                <span class="section-icon">📄</span>
+                <span>Source PDF</span>
+            </div>
             
-            <div class="toggle-row">
-                <span>Enable Meow Mode</span>
+            <div id="upload-container">
+                 <label for="pdfUpload" class="file-upload-label">
+                    <span>📁 Choose File...</span>
+                    <input type="file" id="pdfUpload" accept=".pdf">
+                </label>
+            </div>
+
+            <div id="loading-container" class="hidden">
+                <div class="spinner"></div>
+                <span class="loading-text">Processing PDF... meow...</span>
+            </div>
+
+            <div id="file-status-container" class="hidden">
+                <div class="status-box">✅ PDF Ready!</div>
+                <button id="regenerateBtn" class="secondary-btn compact-btn">🔄 Replace PDF</button>
+            </div>
+        </div>
+
+        <div class="section settings-section">
+            <div class="setting-item">
+                <span class="setting-label">⏰ Interval (Min)</span>
+                <input type="number" id="interval" value="5" min="1" class="compact-input">
+            </div>
+            
+            <div class="setting-item toggle-item">
+                <span class="setting-label">🐱 Active Mode</span>
                 <label class="switch">
                     <input type="checkbox" id="toggleExt">
                     <span class="slider round"></span>
@@ -42,7 +61,7 @@
         </div>
 
         <div class="actions">
-            <button id="saveBtn" class="primary-btn">Save & Start</button>
+            <button id="saveBtn" class="primary-btn">💾 Save & Start</button>
             <button id="downloadBtn" class="outline-btn">📥 Download Facts</button>
         </div>
 

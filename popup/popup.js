@@ -1,9 +1,8 @@
 import { db } from '../scripts/db.js';
 
-// Setup Worker for PDF.js (Crucial!)
 pdfjsLib.GlobalWorkerOptions.workerSrc = '../lib/pdf.worker.min.js';
 
-// UI Elements
+// UI Elements (Updated IDs)
 const apiKeyInput = document.getElementById('apiKey');
 const intervalInput = document.getElementById('interval');
 const toggleInput = document.getElementById('toggleExt');
@@ -12,34 +11,97 @@ const saveBtn = document.getElementById('saveBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const regenerateBtn = document.getElementById('regenerateBtn');
 const msgBox = document.getElementById('msg');
-const fileStatus = document.getElementById('file-status');
+
+// PDF Section Containers
+const uploadContainer = document.getElementById('upload-container');
+const loadingContainer = document.getElementById('loading-container');
+const fileStatusContainer = document.getElementById('file-status-container');
 
 // --- 1. Load Saved Settings on Open ---
 document.addEventListener('DOMContentLoaded', async () => {
     const settings = await db.getSettings();
     const pdfText = await db.getPDFText();
 
-    // Fill Inputs
     apiKeyInput.value = settings.apiKey || '';
     intervalInput.value = settings.intervalMinutes || 1;
     toggleInput.checked = settings.isEnabled;
 
-    // Show PDF Status
+    // Check PDF Status
     if (pdfText) {
-        fileStatus.classList.remove('hidden');
-        fileInput.classList.add('hidden'); // Hide upload if exists
-        regenerateBtn.classList.remove('hidden'); // Show regen button
+        showFileDoneState();
+    } else {
+        showUploadState();
+    }
+
+    // Check Active State -> Fade Save Button if already running
+    if (settings.isEnabled && settings.apiKey && pdfText) {
+       updateSaveButtonState(true); // Make it look disabled
     }
 });
 
-// --- 2. Handle Logic ---
+// --- UI Helper Functions for PDF States ---
+function showLoading() {
+    uploadContainer.classList.add('hidden');
+    fileStatusContainer.classList.add('hidden');
+    loadingContainer.classList.remove('hidden');
+    msgBox.innerText = "";
+}
+
+function showFileDoneState() {
+    loadingContainer.classList.add('hidden');
+    uploadContainer.classList.add('hidden');
+    fileStatusContainer.classList.remove('hidden');
+}
+
+function showUploadState() {
+    loadingContainer.classList.add('hidden');
+    fileStatusContainer.classList.add('hidden');
+    uploadContainer.classList.remove('hidden');
+    fileInput.value = ""; // Reset file selection
+}
+
+// Helper to manage Save button state
+function updateSaveButtonState(isActive) {
+    if (isActive) {
+        saveBtn.classList.add('disabled-look');
+        saveBtn.innerHTML = "🐱 Active & Running";
+        // We don't actually disable `saveBtn.disabled = true` because user might want to update settings,
+        // but visually it looks faded to indicate it's already ON.
+    } else {
+        saveBtn.classList.remove('disabled-look');
+        saveBtn.innerHTML = "💾 Save & Start";
+    }
+}
+
+
+// --- 2. Event Listeners ---
+
+// Handle File Selection (Triggers Loading)
+fileInput.addEventListener('change', async () => {
+    if (fileInput.files.length > 0) {
+        showLoading(); // Start Loading UI
+        try {
+            const text = await extractTextFromPDF(fileInput.files[0]);
+            await db.setPDFText(text);
+            // Wait a tiny bit for visual effect
+            setTimeout(() => {
+                 showFileDoneState(); // Done UI
+                 showMsg("PDF processed successfully!", "green");
+            }, 500);
+           
+        } catch (error) {
+            console.error(error);
+            showUploadState(); // Revert on error
+            showMsg("❌ Error reading PDF: " + error.message, "red");
+        }
+    }
+});
+
 
 // Toggle "Regenerate" mode
 regenerateBtn.addEventListener('click', () => {
-    fileStatus.classList.add('hidden');
-    fileInput.classList.remove('hidden'); // Show upload input again
-    regenerateBtn.classList.add('hidden');
-    msgBox.innerText = "Upload a new PDF to replace the old one.";
+    showUploadState();
+    showMsg("Upload a new PDF to replace.", "#e67e5f");
 });
 
 // Save & Start Button
@@ -49,30 +111,30 @@ saveBtn.addEventListener('click', async () => {
     const isEnabled = toggleInput.checked;
 
     if (!apiKey) {
-        showMsg("❌ API Key is required!", "red");
+        showMsg("❌ Key missing!", "red");
         return;
     }
 
-    showMsg("💾 Saving & Processing...", "blue");
+    // Immediately disable button visually to prevent double clicks
+    saveBtn.classList.add('disabled-look');
+    saveBtn.innerHTML = "⏳ Processing...";
+    showMsg("Saving...", "blue");
 
     try {
-        // A. Handle PDF Upload (if new file selected)
-        if (fileInput.files.length > 0) {
-            showMsg("📄 Reading PDF...", "blue");
-            const text = await extractTextFromPDF(fileInput.files[0]);
-            await db.setPDFText(text);
-            
-            // Trigger Background to Generate Initial Facts
-            showMsg("😼 Generating Meow Facts...", "blue");
-            const response = await chrome.runtime.sendMessage({ action: 'GENERATE_INITIAL' });
-            
-            if (!response.success) throw new Error(response.error);
+        // Check if we need initial generation (only if text exists but no facts yet)
+        const currentText = await db.getPDFText();
+        const currentFacts = await db.getFacts();
+
+        if (currentText && currentFacts.length === 0) {
+             showMsg("😼 Generating first facts... (Wait)", "blue");
+             const response = await chrome.runtime.sendMessage({ action: 'GENERATE_INITIAL' });
+             if (!response.success) throw new Error(response.error);
         }
 
-        // B. Save Settings
+        // Save Settings
         await db.setSettings(apiKey, interval, isEnabled);
 
-        // C. Update Alarm
+        // Update Alarm
         if (isEnabled) {
             await chrome.runtime.sendMessage({ action: 'START_ALARM' });
         } else {
@@ -80,18 +142,12 @@ saveBtn.addEventListener('click', async () => {
         }
 
         showMsg("✅ Saved! Meow mode active.", "green");
-        
-        // Refresh UI state
-        if (fileInput.files.length > 0) {
-            fileStatus.classList.remove('hidden');
-            fileInput.classList.add('hidden');
-            fileInput.value = ""; // Reset input
-            regenerateBtn.classList.remove('hidden');
-        }
+        updateSaveButtonState(isEnabled); // Update button look based on final state
 
     } catch (err) {
         console.error(err);
         showMsg("❌ Error: " + err.message, "red");
+        updateSaveButtonState(false); // Revert button if error
     }
 });
 
@@ -99,59 +155,44 @@ saveBtn.addEventListener('click', async () => {
 downloadBtn.addEventListener('click', async () => {
     const facts = await db.getFacts();
     if (!facts || facts.length === 0) {
-        showMsg("⚠️ No facts generated yet!", "orange");
+        showMsg("⚠️ No facts yet!", "orange");
         return;
     }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
+    // ... (PDF generation code same as before) ...
     doc.setFontSize(20);
     doc.text("Mewoinfo - Collected Facts", 10, 20);
-    
     doc.setFontSize(12);
     let y = 40;
-    
     facts.forEach((fact, index) => {
-        if (y > 280) { // New page if bottom reached
-            doc.addPage();
-            y = 20;
-        }
-        // Split text to fit width
+        if (y > 280) { doc.addPage(); y = 20; }
         const lines = doc.splitTextToSize(`${index + 1}. ${fact}`, 180);
         doc.text(lines, 10, y);
-        y += (lines.length * 7) + 5; // Adjust spacing
+        y += (lines.length * 7) + 5;
     });
-
     doc.save("Meow_Facts.pdf");
 });
 
-// --- Helper: Extract Text from PDF ---
+
+// --- Helper: Extract Text from PDF (Same as before) ---
 async function extractTextFromPDF(file) {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    
     let fullText = "";
-    
-    // Loop through all pages
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items.map(item => item.str).join(" ");
         fullText += pageText + "\n";
     }
-    
     return fullText;
 }
 
 function showMsg(text, color) {
     msgBox.innerText = text;
     msgBox.style.color = color;
+    // Auto-clear message after 3 seconds
+    setTimeout(() => { msgBox.innerText = ""; }, 3000);
 }
-
-// Allow pressing "Enter" in the API Key box to Save
-apiKeyInput.addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-        saveBtn.click(); // Automatically clicks the Save button for you
-    }
-});
