@@ -4,68 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mewoinfo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="popup.css">
     <script src="../lib/pdf.min.js"></script>
     <script src="../lib/jspdf.umd.min.js"></script>
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <div class="header">
-        <img src="../icons/icon48.png" alt="Icon" class="header-icon">
-        <h1>Mewo Info</h1>
+        <div class="header-content">
+            <div class="logo-circle">
+                <img src="../icons/icon48.png" alt="Cat" class="logo-img">
+            </div>
+            <div class="header-text">
+                <h1>Mewoinfo</h1>
+                <span class="tagline">Your Purrfect Study Buddy</span>
+            </div>
+        </div>
     </div>
 
     <div class="container">
-        <div class="input-group">
-            <span class="input-icon">🔑</span>
-            <input type="password" id="apiKey" placeholder="Gemini API Key...">
+        
+        <div class="card">
+            <div class="input-row">
+                <span class="icon">🔑</span>
+                <input type="password" id="apiKey" placeholder="Paste Gemini API Key...">
+            </div>
         </div>
 
-        <div class="section pdf-section">
-            <div class="section-header">
-                <span class="section-icon">📄</span>
-                <span>Source PDF</span>
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📄</span> Source Material
             </div>
             
             <div id="upload-container">
-                 <label for="pdfUpload" class="file-upload-label">
-                    <span>📁 Choose File...</span>
+                <label for="pdfUpload" class="upload-btn">
+                    <span>☁️ Upload PDF</span>
                     <input type="file" id="pdfUpload" accept=".pdf">
                 </label>
             </div>
 
-            <div id="loading-container" class="hidden">
+            <div id="loading-container" class="hidden centered-col">
                 <div class="spinner"></div>
-                <span class="loading-text">Processing PDF... meow...</span>
+                <span class="subtext">Reading PDF...</span>
             </div>
 
-            <div id="file-status-container" class="hidden">
-                <div class="status-box">✅ PDF Ready!</div>
-                <button id="regenerateBtn" class="secondary-btn compact-btn">🔄 Replace PDF</button>
+            <div id="file-status-container" class="hidden row-between">
+                <div class="badge success">✅ Loaded</div>
+                <button id="regenerateBtn" class="icon-btn" title="Replace">🔄</button>
             </div>
         </div>
 
-        <div class="section settings-section">
-            <div class="setting-item">
-                <span class="setting-label">⏰ Interval (Min)</span>
-                <input type="number" id="interval" value="5" min="1" class="compact-input">
+        <div class="card">
+            <div class="row-between">
+                <div class="col">
+                    <span class="label">⏰ Interval</span>
+                    <input type="number" id="interval" value="5" min="1" class="mini-input">
+                </div>
+                <div class="col end">
+                    <span class="label">Active</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleExt">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
             </div>
             
-            <div class="setting-item toggle-item">
-                <span class="setting-label">🐱 Active Mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="toggleExt">
-                    <span class="slider round"></span>
-                </label>
+            <button id="snoozeBtn" class="secondary-btn mt-2">
+                💤 Snooze 30m
+            </button>
+        </div>
+
+        <div class="card history-card">
+            <div class="card-header">
+                <span class="icon">📜</span> Recent Meows
             </div>
+            <ul id="history-list">
+                <li class="empty-state">No facts yet...</li>
+            </ul>
         </div>
 
         <div class="actions">
             <button id="saveBtn" class="primary-btn">💾 Save & Start</button>
-            <button id="downloadBtn" class="outline-btn">📥 Download Facts</button>
+            <button id="downloadBtn" class="outline-btn" title="Download">📥 PDF</button>
         </div>
-
-        <div id="msg" class="message"></div>
     </div>
 
     <script type="module" src="popup.js"></script>
