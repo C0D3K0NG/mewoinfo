@@ -123,7 +123,7 @@ async function handleGameLoop() {
                 await chrome.tabs.sendMessage(tab.id, {
                     action: 'SHOW_CAT',
                     fact: currentFact,
-                    catIndex: Math.floor(Math.random() * 10)
+                    catIndex: Math.floor(Math.random() * 30)
                 });
                 console.log("📨 Message Sent!");
             }, 300); // 300ms delay to let script load
