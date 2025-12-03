@@ -1,4 +1,3 @@
-let autoRemoveTimer = null;
 
 // Load Font Awesome
 const link = document.createElement('link');
