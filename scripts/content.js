@@ -1,5 +1,11 @@
 let autoRemoveTimer = null;
 
+// Load Font Awesome
+const link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+document.head.appendChild(link);
+
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "SHOW_CAT") {
         showMeowFact(request.fact, request.catIndex);
@@ -27,16 +33,20 @@ function showMeowFact(factText, catIndex) {
     closeBtn.onclick = removeCat;
     bubble.appendChild(closeBtn);
 
-    // 📋 COPY BUTTON (New)
-    const copyBtn = document.createElement('img');
+    // 📋 COPY BUTTON (Font Awesome)
+    const copyBtn = document.createElement('i');
     copyBtn.id = 'mewoinfo-copy';
-    // Using a simple embedded SVG for copy icon
-    copyBtn.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGUzNDJlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iOSIgeT0iOSIgd2lkdGg9IjEzIiBoZWlnaHQ9IjEzIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48cGF0aCBkPSJNNSAxNWgyYTIgMiAwIDAgMSAyLTJWM2EyIDIgMCAwIDEgMi0yaDEzIj48L3BhdGg+PC9zdmc+';
+    copyBtn.className = 'fa-regular fa-copy';
     copyBtn.title = "Copy to clipboard";
-    copyBtn.onclick = () => {
-        navigator.clipboard.writeText(factText);
-        copyBtn.style.opacity = '0.3'; // Visual feedback
-        setTimeout(() => copyBtn.style.opacity = '1', 200);
+    copyBtn.style.cursor = 'pointer';
+    copyBtn.onclick = (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(factText).then(() => {
+            // Visual feedback
+            const originalColor = copyBtn.style.color;
+            copyBtn.style.color = '#4caf50';
+            setTimeout(() => copyBtn.style.color = originalColor, 300);
+        });
     };
     bubble.appendChild(copyBtn);
 
