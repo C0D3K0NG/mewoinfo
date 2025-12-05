@@ -1,9 +1,4 @@
-
-// Load Font Awesome
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-document.head.appendChild(link);
+let autoRemoveTimer = null;
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "SHOW_CAT") {
@@ -32,19 +27,18 @@ function showMeowFact(factText, catIndex) {
     closeBtn.onclick = removeCat;
     bubble.appendChild(closeBtn);
 
-    // 📋 COPY BUTTON (Font Awesome)
-    const copyBtn = document.createElement('i');
+    // 📋 COPY BUTTON (SVG Icon - No CDN needed)
+    const copyBtn = document.createElement('div');
     copyBtn.id = 'mewoinfo-copy';
-    copyBtn.className = 'fa-regular fa-copy';
     copyBtn.title = "Copy to clipboard";
+    copyBtn.innerHTML = '📋'; // Simple clipboard emoji as fallback
     copyBtn.style.cursor = 'pointer';
     copyBtn.onclick = (e) => {
         e.stopPropagation();
         navigator.clipboard.writeText(factText).then(() => {
             // Visual feedback
-            const originalColor = copyBtn.style.color;
-            copyBtn.style.color = '#4caf50';
-            setTimeout(() => copyBtn.style.color = originalColor, 300);
+            copyBtn.innerHTML = '✓'; // Show checkmark on success
+            setTimeout(() => copyBtn.innerHTML = '📋', 500);
         });
     };
     bubble.appendChild(copyBtn);

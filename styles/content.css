@@ -48,21 +48,20 @@
 }
 #mewoinfo-close:hover { transform: scale(1.1); }
 
-/* Copy Button (Font Awesome Icon) */
+/* Copy Button (Emoji) */
 #mewoinfo-copy {
     position: absolute;
     bottom: 8px;
     right: 10px;
     cursor: pointer;
-    opacity: 0.7;
+    opacity: 0.8;
     transition: all 0.2s ease;
-    color: #4e342e;
-    font-size: 14px;
+    font-size: 16px;
+    user-select: none;
 }
 #mewoinfo-copy:hover { 
     opacity: 1;
-    transform: scale(1.15);
-    color: #ff7043;
+    transform: scale(1.2);
 }
 
 /* Cat Image */
