@@ -60,7 +60,12 @@ export const db = {
 
     // 2. PDF Text
     async setPDFText(text) {
+        // Save new PDF text
         await saveData(STORE_DATA, { id: 'source_text', val: text });
+        // Reset facts, index, and history when a new PDF is uploaded
+        await saveData(STORE_DATA, { id: 'meow_facts', val: [] });
+        await saveData(STORE_DATA, { id: 'current_index', val: 0 });
+        await saveData(STORE_DATA, { id: 'history', val: [] });
     },
     async getPDFText() {
         return await getData(STORE_DATA, 'source_text');

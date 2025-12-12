@@ -19,6 +19,7 @@ function showMeowFact(factText, catIndex) {
     const textSpan = document.createElement('span');
     textSpan.innerText = factText;
     bubble.appendChild(textSpan);
+    
 
     // Close Button
     const closeBtn = document.createElement('div');
@@ -79,7 +80,7 @@ function showMeowFact(factText, catIndex) {
     container.appendChild(catImg);
     document.body.appendChild(container);
 
-    autoRemoveTimer = setTimeout(removeCat, 30000);
+    autoRemoveTimer = setTimeout(removeCat, 60000);
 }
 
 function spawnHeart(x, y) {
