@@ -49,6 +49,7 @@ mewoinfo/
 └── cat_gifs/              # Cat GIF animations
     ├── cat0.gif
     ├── cat1.gif
+    ├── cat2.gif
     └── ... (up to cat9.gif)
 ```
 
